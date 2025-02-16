@@ -23,6 +23,7 @@ module.exports = {
         while (array[index.idx] != ")") {
             // Если внутри еще одна скобка
             if (array[index.idx] == "(") {
+                let r = {p: []}
                 // Рекурсивный вызов с index
                 this.parse(array, index, r)
                 res.p.push(r)

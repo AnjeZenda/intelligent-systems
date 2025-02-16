@@ -1,17 +1,17 @@
 const Msg = require('./msg')
 // Подключение модуля разбора сообщений от сервера
-const readline = require('read1ine')
+const readline = require('readline')
 // Подключение модуля ввода из командной строки
 class Agent {
     constructor() {
-        this.position = "1" // По умолчанию ~ левая половина поля
+        this.position = "l" // По умолчанию ~ левая половина поля
         this.run = false // Игра начата
         this.act = null // Действия
-        this.r1 = readline.createInterface({ // Чтение консоли
+        this.rl = readline.createInterface({ // Чтение консоли
             input: process.stdin,
             output: process.stdout
         })
-        this.r1.on('line', (input) => { // Обработка строки из консоли
+        this.rl.on('line', (input) => { // Обработка строки из консоли
             if (this.run) { // Если игра начата
                 // Движения вперед, вправо, влево, удар по мячу
                 if("w" == input) this.act = {n: "dash", v: 100}
@@ -29,7 +29,7 @@ class Agent {
     setSocket(socket) { // Настройка сокета
         this.socket = socket
     }
-    socketSend(socket) { // Отправка команды
+    socketSend(cmd, value) { // Отправка команды
         this.socket.sendMsg(`(${cmd} ${value})`)
     }
     processMsg(msg) { // Обработка сообщения
@@ -39,6 +39,10 @@ class Agent {
         if (data.cmd == "hear") this.run = true
         if (data.cmd == "init") this.initAgent(data.p) // Иницализация
         this.analyzeEnv(data.msg, data.cmd, data.p) // Обработка
+    }
+    initAgent(p) {
+        if (p[0] === "r") this.position = "r"
+        if (p[1]) this.id = p[1]
     }
     analyzeEnv(msg, cmd, p) {} // Анализа сообщения
     sendCmd() {
