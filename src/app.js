@@ -34,10 +34,8 @@ const Flags = {
     },
 }
 
-let teamName = "teamA" // Имя команды
+let teamName = "Puck,GOAL" // Имя команды
 let agent = new Agent(); // Создание экземпляра агента
 
 require('./socket')(agent, teamName, VERSION) //Настройка сокета
 agent.socketSend("move", `-15 0`) // Размещение игрока на поле
-
-function calculateDistance() {/** Практическа работа 1 */}
