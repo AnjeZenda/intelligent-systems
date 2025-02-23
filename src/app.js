@@ -29,10 +29,9 @@ async function getUserInput(prompt) {
 		c2 = await getUserInput('Second player coordinates (x y):')
 		s = +(await getUserInput('First player rotation speed (s):'))
 	} else {
-		;[c1, c2, s] = [[-15, 0], [5, 10], 20]
+		[c1, c2, s] = [[-15, 0], [5, 10], 20]
 	}
 
-	console.log('kekaaaaa', [c1, c2, s])
 
 	let pA1 = new Agent(teamNameA, { name: 'spin', speed: s })
 	let pB1 = new Agent(teamNameB)
