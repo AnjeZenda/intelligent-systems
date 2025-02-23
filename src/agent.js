@@ -75,11 +75,16 @@ class Agent {
         x_ans_2 = x1 - Math.sqrt(d1**2 - (y - y1)**2)
     }
     analyzeEnv(msg, cmd, p) { //
+        //console.log(msg, cmd, p);
+        if (cmd === "hear" && p[2] === "play_on") {
+            this.run = true;
+        }
         if (this.run && cmd === "see") {
+            this.socketSend("turn", this.rotationSpeed);
             if (p){
                 const flags = this.parseFlags(p); //TODO работает неправильно
                 const opponents = this.parseOpponents(p); //TODO работает неправильно
-                console.log(flags, opponents)
+                //console.log(flags, opponents)
                 if (flags.length >= 2) {
                     const pos = this.calculatePosition(flags);
                     console.log("Игрок:", pos);
@@ -101,30 +106,30 @@ class Agent {
 
     parseFlags(p) {
         const flags = [];
-        for (const item of p) {
-            if (typeof item === "object" && item.cmd.p) {
-                const cmdData = item.cmd.p;
-                if (cmdData[0] === "f") {
-                    // Генерируем правильный идентификатор флага
-                    const flagParts = cmdData.slice(1);
-                    const flagId = flagParts.join("")
-                        .replace(/ /g, "") // Удаляем пробелы
-                        .replace("O", "0"); // Исправляем опечатку во Flags
+        // for (const item of p) {
+        //     if (typeof item === "object" && item.cmd.p) {
+        //         const cmdData = item.cmd.p;
+        //         if (cmdData[0] === "f") {
+        //             // Генерируем правильный идентификатор флага
+        //             const flagParts = cmdData.slice(1);
+        //             const flagId = flagParts.join("")
+        //                 .replace(/ /g, "") // Удаляем пробелы
+        //                 .replace("O", "0"); // Исправляем опечатку во Flags
 
-                    // Проверяем существование флага
-                    if (app.Flags[flagId]) {
-                        const [distance, angle] = item.p;
-                        flags.push({
-                            id: flagId,
-                            distance,
-                            angle,
-                            x: app.Flags[flagId].x,
-                            y: app.Flags[flagId].y
-                        });
-                    }
-                }
-            }
-        }
+        //             // Проверяем существование флага
+        //             if (app.Flags[flagId]) {
+        //                 const [distance, angle] = item.p;
+        //                 flags.push({
+        //                     id: flagId,
+        //                     distance,
+        //                     angle,
+        //                     x: app.Flags[flagId].x,
+        //                     y: app.Flags[flagId].y
+        //                 });
+        //             }
+        //         }
+        //     }
+        // }
         return flags;
     }
 
@@ -176,23 +181,23 @@ class Agent {
 
     parseOpponents(p) {
         const opponents = [];
-        for (const item of p) {
-            if (typeof item === "object" && item.cmd.p) {
-                const cmdData = item.cmd.p;
-                if (cmdData[0] === "player") {
-                    const team = cmdData[1];
-                    if (team !== this.teamName) {
-                        const [distance, angle] = item.p;
-                        opponents.push({
-                            team,
-                            number: cmdData[2],
-                            distance,
-                            angle
-                        });
-                    }
-                }
-            }
-        }
+        // for (const item of p) {
+        //     if (typeof item === "object" && item.cmd.p) {
+        //         const cmdData = item.cmd.p;
+        //         if (cmdData[0] === "player") {
+        //             const team = cmdData[1];
+        //             if (team !== this.teamName) {
+        //                 const [distance, angle] = item.p;
+        //                 opponents.push({
+        //                     team,
+        //                     number: cmdData[2],
+        //                     distance,
+        //                     angle
+        //                 });
+        //             }
+        //         }
+        //     }
+        // }
         return opponents;
     }
     sendCmd() {
