@@ -1,6 +1,14 @@
 const Msg = require('./msg')
 const readline = require('readline')
 const Flags = require('./flags')
+const { log } = require('console')
+
+const actions = [
+	{ act: 'kick', fl: 'b', goal: 'gr' },
+	{ act: 'flag', fl: 'gl' },
+	{ act: 'flag', fl: 'frb' },
+	{ act: 'flag', fl: 'fc' },
+]
 
 const round = a => Math.round(a * 100) / 100
 
@@ -16,6 +24,7 @@ class Agent {
 		})
 		this.team = team
 		this.strat = strat
+		this.actionIdx = 0
 
 		this.rl.on('line', input => {
 			// Обработка строки из кон—
@@ -49,7 +58,7 @@ class Agent {
 		let data = Msg.parseMsg(msg) // Разбор сообщения
 		if (!data) throw new Error('Parse error\n' + msg)
 		// Первое (hear) — начало игры
-		if (data.cmd == 'hear') this.run = true
+		if (data.cmd == 'hear' && data.p[2] === 'play_on') this.run = true
 		if (data.cmd == 'init') this.initAgent(data.p) //MHMnmaflM3auMH
 		this.analyzeEnv(data.msg, data.cmd, data.p) // Обработка
 	}
@@ -58,21 +67,29 @@ class Agent {
 		if (p[1]) this.id = p[1] // id игрока
 	}
 	analyzeEnv(msg, cmd, p) {
+		if (cmd == 'hear' && p[2].includes('goal')) {
+			this.run = false
+			console.log('GOAAAAAAAAAAAAAAAAAAAL')
+			if (this.strat == 'kick')
+				this.actionIdx = (this.actionIdx + 1) % actions.length
+		}
 		// Анализ сообщения
 		if (cmd === 'see') {
-			if (this.strat && this.strat.name === 'spin' && p[0] > 100) {
-				this.act = { n: 'turn', v: this.strat.speed }
-			}
-			console.log('---------------------------------------------------')
 
 			const observedFlags = []
+			const allFlags = []
+			const allNamesFlags = []
+			const observedNamesFlags = []
 			const opponents = []
+			let isBallSeen = false
 
 			const xs = []
 			for (let i = 1; i < p.length; i++) {
 				let flagName = p[i].cmd.p.join('')
 				if (Object.keys(Flags).includes(flagName) && p[i].p.length >= 2) {
 					// Flag
+					allFlags.push(p[i])
+					allNamesFlags.push(flagName)
 					let x = Flags[flagName].x
 					if (!xs.includes(x)) {
 						observedFlags.push(p[i])
@@ -81,6 +98,66 @@ class Agent {
 				} else if (p[i].cmd.p[0] === 'p' && p[i].cmd.p[1] !== this.team) {
 					// Opponent
 					opponents.push(p[i])
+				} else if (p[i].cmd.p[0] === 'b') {
+					isBallSeen = true
+					// Ball
+					if (this.strat === 'kick') {
+						const distanseBall = p[i].p[0]
+						const angleBall = p[i].p[1]
+
+						if (angleBall) {
+							this.act = { n: 'turn', v: angleBall }
+						}
+						else if (distanseBall > 0.5) {
+							this.act = { n: 'dash', v: 100 }
+						} else {
+							const indexGate = allNamesFlags.indexOf(
+								actions[this.actionIdx].goal
+							)
+							let angleGate = null
+							if (indexGate !== -1) {
+								for (let i = 0; i < allFlags.length; i++) {
+									if (this.extractFlagName(allFlags[i]) === 'gr') {
+										angleGate = allFlags[i].p[1]
+									}
+								}
+
+								// console.log('angleGate', angleGate)
+								this.act = { n: 'kick', v: `100 ${angleGate}` }
+							} else {
+								this.act = { n: 'kick', v: `10 45` }
+							}
+						}
+					}
+				}
+			}
+
+			
+
+			this.strat = actions[this.actionIdx].act
+			// act with ball
+			if (this.strat === 'kick' && !isBallSeen) {
+				this.act = { n: 'turn', v: 90 }
+			}
+
+			// act with flags
+			const indexViewFlag = allNamesFlags.indexOf(actions[this.actionIdx].fl)
+
+			if (this.strat === 'flag' && indexViewFlag === -1) {
+				this.act = { n: 'turn', v: 90 }
+			}
+			if (indexViewFlag !== -1) {
+				const distanseFlag = allFlags[indexViewFlag].p[0]
+				const angleFlag = allFlags[indexViewFlag].p[1]
+				if (angleFlag) {  
+					this.act = {
+						n: 'turn',
+						v: angleFlag,
+					}
+				} else if (distanseFlag > 3) {
+					this.act = { n: 'dash', v: 100 }
+				} else {
+					this.actionIdx = (this.actionIdx + 1) % actions.length
 				}
 			}
 
@@ -101,6 +178,7 @@ class Agent {
 				]
 			}
 
+
 			const [x1, y1, d1, alpha1] = extractFlagCoordsAndDistance(
 				observedFlags[0]
 			)
@@ -112,13 +190,13 @@ class Agent {
 			)
 			const [X, Y] = this.calculatePosition(x1, y1, d1, x2, y2, d2, x3, y3, d3)
 
-			console.log(
-				`${this.id} игрок команды ${this.team}: X = ${round(X)} Y = ${round(Y)}`
-			)
+			// console.log(
+			// 	`${this.id} игрок команды ${this.team}: X = ${round(X)} Y = ${round(Y)}`
+			// )
 
 			// Opponent
 			if (opponents.length) {
-				// console.log('opponents', opponents)
+
 				const [da, alphaa] = [opponents[0].p[0], opponents[0].p[1]]
 				const da1 = Math.sqrt(
 					d1 * d1 +
@@ -141,14 +219,18 @@ class Agent {
 					Y,
 					da
 				)
-				console.log(
-					`${this.id} игрок команды ${this.team} видит игрока команды ${
-						opponents[0].cmd.p[1]
-					}: X = ${round(XO)} Y = ${round(YO)}`
-				)
+				// console.log(
+				// 	`${this.id} игрок команды ${this.team} видит игрока команды ${
+				// 		opponents[0].cmd.p[1]
+				// 	}: X = ${round(XO)} Y = ${round(YO)}`
+				// )
 			}
 		}
 	}
+	extractFlagName ( observedFlag) {
+		return observedFlag.cmd.p.join('')	
+	} 
+
 	calculatePosition(x1, y1, d1, x2, y2, d2, x3, y3, d3) {
 		const alpha1 = (y1 - y2) / (x2 - x1)
 		const beta1 =
@@ -166,15 +248,8 @@ class Agent {
 	}
 	sendCmd() {
 		if (this.run) {
-			// Идра начата
-			if (this.act) {
-				// Есть команда от игрока
-				if (this.act.n == 'kick')
-					// Пнуть мяч
-					this.socketSend(this.act.n, this.act.v + ' 0')
-				// ДВижение и поворот
-				else this.socketSend(this.act.n, this.act.v)
-			}
+			// Игра начата
+			if (this.act) this.socketSend(this.act.n, this.act.v)
 			this.act = null // Сброс команды
 		}
 	}
