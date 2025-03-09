@@ -2,9 +2,8 @@ const rotationSpeed = 45;
 const goalAngle = 3;
 const flagCloseness = 3;
 const ballCloseness = 0.5;
-const runSpeed = 100;
-const waitTime = 10;
-const passAngleChange = 40;
+const runSpeed = 88;
+const waitTime = 15;
 const slowDownDistance = 3;
 const slowDownCoefficient = 0.8;
 const distance_treshold = 20;
@@ -61,7 +60,8 @@ const DT = {
 	hearProcessing: {
 		exec(mgr, state, p, cmd){
 			state.previous_play_on = state.cur_play_on;
-			state.cur_play_on = mgr.isPlayOn(p, state.cur_play_on);
+			state.cur_play_on = mgr.isPlayOn(p, state.previous_play_on);
+//			console.log("DEBUG "+ p[2], state.cur_play_on, state.previous_play_on)
 		},
 		next: "checkPlayMode",
 	},
@@ -77,6 +77,7 @@ const DT = {
 	},
 	move2start: {
 		exec(mgr, state, p, cmd){
+//			console.log("DEBUG move2start ", state)
 			state.command = {n: "move", v: state.start_coords[0] + " " + state.start_coords[1]};
 			state.next = 0;
 			state.wait = 0;

@@ -3,8 +3,6 @@ const goalAngle = 3;
 const flagCloseness = 3;
 const ballCloseness = 0.5;
 const runSpeed = 85;
-const waitTime = 20;
-const passAngleChange = 30;
 const slowDownDistance = 3;
 const slowDownCoefficient = 0.8;
 
@@ -136,13 +134,19 @@ const DT = {
 		next: "sendCommand",
 	},
 	ballGoalInvisible: {
+		condition: (mgr, state, p) => mgr.lookAtBottomFlags(p),
+		trueCond: "ballGoalInvisibleBottom",
+		falseCond: "ballGoalInvisibleTop",
+	},
+	ballGoalInvisibleTop: {
 		exec(mgr, state, p){
-			let angle = -45;
-			if (state.turn_angle < 0){
-				angle = 45;
-			}
-			angle = 45;
-			state.command = {n: "kick", v: "10 " + angle};
+			state.command = {n: "kick", v: `10 ${55}`}
+		},
+		next: "sendCommand",
+	},
+	ballGoalInvisibleBottom: {
+		exec(mgr, state, p){
+			state.command = {n: "kick", v: `10 ${-55}`}
 		},
 		next: "sendCommand",
 	},

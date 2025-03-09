@@ -5,7 +5,7 @@ class Manager{
 	getAction(dt, p, cmd){
 		function execute(dt, title, p, cmd){
 			const action = dt[title];
-			console.log(title);
+			//console.log(title);
 
 			if (typeof action.exec == "function"){
 				action.exec(Manager, dt.state, p, cmd);
@@ -19,7 +19,7 @@ class Manager{
 				return execute(dt, action.falseCond, p, cmd);
 			}
 			if (typeof action.command == "function"){
-				console.log(dt.state.command);
+				//console.log(dt.state.command);
 				return action.command(Manager, dt.state);
 			}
 			throw new Error(`Unexpected node in DT: ${title}`);
@@ -61,19 +61,19 @@ class Manager{
 			}
 			return true;
 		}
-		if (p[2] === "play_on"){
+		if (p[2] === "play_on" || p[2] === "drop_ball"){
 			return true;
 		}
 		return false;
 	}
 
 	static hearGo(p){
-		console.log(p, p[2].includes("go"));
+		//console.log(p, p[2].includes("go"));
 		return p[2].includes("go");
 	}
 
 	static getStrength(distance){
-		return Math.min(100, Math.floor(distance * 5));
+		return Math.min(95, Math.floor(distance * 5));
 	}
 }
 
