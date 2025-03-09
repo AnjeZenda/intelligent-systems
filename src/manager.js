@@ -2,21 +2,21 @@ const utils = require("./calculations");
 
 class Manager{
 
-	getAction(dt, p){
-		function execute(dt, title, p){
+	getAction(dt, p, cmd){
+		function execute(dt, title, p, cmd){
 			const action = dt[title];
 			console.log(title);
 
 			if (typeof action.exec == "function"){
-				action.exec(Manager, dt.state, p);
-				return execute(dt, action.next, p);
+				action.exec(Manager, dt.state, p, cmd);
+				return execute(dt, action.next, p, cmd);
 			}
 			if (typeof action.condition == "function"){
-				const cond = action.condition(Manager, dt.state, p);
+				const cond = action.condition(Manager, dt.state, p, cmd);
 				if (cond){
-					return execute(dt, action.trueCond, p);
+					return execute(dt, action.trueCond, p, cmd);
 				}
-				return execute(dt, action.falseCond, p);
+				return execute(dt, action.falseCond, p, cmd);
 			}
 			if (typeof action.command == "function"){
 				console.log(dt.state.command);
@@ -24,12 +24,11 @@ class Manager{
 			}
 			throw new Error(`Unexpected node in DT: ${title}`);
 		}
-		return execute(dt, "root", p);
+		return execute(dt, "root", p, cmd);
 	}
 
 	static getVisible(obj_name, p){
 		let obj = utils.see_object(obj_name, p);
-		// console.log("DEBUG", obj);
 		if (obj){
 			return true;
 		}
@@ -48,7 +47,6 @@ class Manager{
 
 	static getFaceDir(obj_name, p){
 		let obj = utils.see_object(obj_name, p);
-		console.log("OBJECT: ", obj);
 		return obj[4];
 	}
 
@@ -56,8 +54,26 @@ class Manager{
 		return utils.seeBottomFlags(p)
 	}
 
-	static lookAtTopFlags(p){
-		return utils.seeTopFlags(p)
+	static isPlayOn(p, prev){
+		if (prev){
+			if (p[2].includes("goal")){
+				return false;
+			}
+			return true;
+		}
+		if (p[2] === "play_on"){
+			return true;
+		}
+		return false;
+	}
+
+	static hearGo(p){
+		console.log(p, p[2].includes("go"));
+		return p[2].includes("go");
+	}
+
+	static getStrength(distance){
+		return Math.min(100, Math.floor(distance * 5));
 	}
 }
 
