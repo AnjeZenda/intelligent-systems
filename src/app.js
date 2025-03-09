@@ -1,49 +1,32 @@
-const readline = require('readline')
-const Agent = require('./agent')
-const Socket = require('./socket')
-const VERSION = 7
-const INPUT = false
+const Agent = require('./agent');
+const Socket = require('./socket');
+const Manager = require("./manager");
+const dt2 = require("./player_dt");
+const goal_keep_dt = require("./goal_keeper_dt");
+const VERSION = 7;
 
-const teamNameA = 'PuckGoal'
-const teamNameB = 'Losers'
 
-async function getUserInput(prompt) {
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout,
-	})
-	const it = rl[Symbol.asyncIterator]()
+(async () => {
+	let teamA = "A";
+	let teamB = "B";
+    let player1 = new Agent(teamA);
+    player1.dt = dt2;
+    player1.manager = new Manager();
 
-	console.log(prompt)
-	const input = (await it.next()).value.split(' ').map(a => +a)
+    let player2 = new Agent(teamA);
+    player2.dt = dt2;
+    player2.manager = new Manager();
 
-	rl.close()
-	return input
-}
+    let goalKeeper = new Agent(teamB);
+    goalKeeper.dt = goal_keep_dt;
+    goalKeeper.manager = new Manager();
+    goalKeeper.goalie = true;
 
-;(async () => {
-	let c1, c2, s
+    await Socket(player1, teamA, VERSION);
+    await Socket(player2, teamA, VERSION);
+    await Socket(goalKeeper, teamB, VERSION, true);
 
-	if (INPUT) {
-		c1 = await getUserInput('First player coordinates (x y):')
-		c2 = await getUserInput('Second player coordinates (x y):')
-		s = +(await getUserInput('First player rotation speed (s):'))
-	} else {
-		[c1, c2, s] = [[-20, -5], [5, 10], 20]
-	}
-
-	// let pA1 = new Agent(teamNameA, 'player')
-	let pA1 = new Agent(teamNameA, 'groupPlayer', true)
-	let pA2 = new Agent(teamNameA, 'groupPlayer')
-	let pB1 = new Agent(teamNameB, 'goalkeeper')
-	// let pB1 = new Agent(teamNameB)
-
-	await Socket(pA1, pA1.team, VERSION)
-	await Socket(pA2, pA2.team, VERSION)
-	await Socket(pB1, pB1.team, VERSION, true)
-	// await Socket(pB1, pB1.team, VERSION)
-
-	await pA1.socketSend('move', `${c1[0]} ${c1[1]}`)
-	await pA2.socketSend('move', '-20 0')
-	await pB1.socketSend('move', `${-c2[0]} ${-c2[1]}`)
-})()
+    await player1.socketSend('move', '-15 -5');
+    await player2.socketSend('move', '-14 4');
+    await goalKeeper.socketSend('move', "-20 0");    
+})();

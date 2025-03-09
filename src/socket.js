@@ -15,6 +15,9 @@ module.exports = async (agent, teamName, version, isGoalie = false) => {
             })
         })
     }
-    // Инициализация игрока на сервере (без параметра goalie)
-    await socket.sendMsg(`(init ${teamName} (version ${version}))` + (isGoalie ? ' (goalie)' : ''))
+    if (!isGoalie){
+        await socket.sendMsg(`(init ${teamName} (version ${version}))`);    
+    } else {
+        await socket.sendMsg(`(init ${teamName} (version ${version}) (goalie))`);
+    }
 }
