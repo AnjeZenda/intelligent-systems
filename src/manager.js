@@ -26,7 +26,8 @@ const Manager = {
 		this.observedFlagsNames = []
 		this.teammates = []
 		this.opponents = []
-		this.pos = {x, y}
+		this.pos = { x, y }
+		this.isLeader = false
 		this.isViewBall = false
 
 		this.processEnv(cmd, p)
@@ -54,7 +55,6 @@ const Manager = {
 		if (cmd === 'see') {
 			const xs = []
 			const ys = []
-
 			for (let i = 1; i < p.length; i++) {
 				let objName = p[i].cmd.p.join('')
 
@@ -72,7 +72,12 @@ const Manager = {
 						ys.push(y)
 					}
 				} // Teammate
-				else if (p[i].cmd.p[0] === 'p' && p[i].cmd.p[1] === this.team) {
+				else if (
+					p[i].cmd.p[0] === 'p' &&
+					(p[i].cmd.p[1]
+						? p[i].cmd.p[1].replace(/"/gi, '') === this.team
+						: false)
+				) {
 					this.teammates.push(p[i])
 				}
 				// Opponent
@@ -103,14 +108,12 @@ const Manager = {
 				this.isolatedObservedFlags[2]
 			)
 			const [x, y] = calculatePosition(x1, y1, d1, x2, y2, d2, x3, y3, d3)
-			console.log(
-				`игрок команды ${this.team}: X = ${round(X)} Y = ${round(Y)}`
-			)
+			// console.log(`игрок команды ${this.team}: X = ${round(x)} Y = ${round(y)}`)
 			this.pos = { x, y }
 		}
 		return this.pos
 	},
-    inPenaltyZone(side = 'r') {
+	inPenaltyZone(side = 'r') {
 		// console.log('inPenaltyZone', this.pos)
 		const { x, y } = this.pos
 		const { fprt, fprb, fplt, fplb } = Flags
@@ -134,7 +137,7 @@ const Manager = {
 			let pos = null
 
 			if (teamArr.length) {
-				const [da, alphaa] = [this.opponents[0].p[0], this.opponents[0].p[1]]
+				const [da, alphaa] = [teamArr[0].p[0], teamArr[0].p[1]]
 				const da1 = Math.sqrt(
 					d1 * d1 +
 						da * da -
@@ -165,9 +168,7 @@ const Manager = {
 	getAngle(flagName) {
 		return this.observedFlags[this.observedFlagsNames.indexOf(flagName)].p[1]
 	},
-    getKickAngle(goal) {
-		// console.log('this.observedFlags', this.observedFlags)
-		// console.log('this.observedFlagsNames', this.observedFlagsNames)
+	getKickAngle(goal) {
 		let indexGates = this.observedFlagsNames.indexOf(goal)
 		if (indexGates !== -1) {
 			return this.observedFlags[indexGates].p[1]

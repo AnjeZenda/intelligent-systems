@@ -3,10 +3,8 @@ const readline = require('readline')
 const Manager = require('./manager')
 const { DT } = require('./decisionTree')
 
-
-
 class Agent {
-	constructor(team, role = 'player') {
+	constructor(team, role = 'player', isLeader = false) {
 		this.position = 'l' // По умолчанию ~ левая половина поля
 		this.run = false // Игра начата
 		this.act = null // Действия
@@ -17,16 +15,16 @@ class Agent {
 		})
 		this.x = null
 		this.y = null
-		this.role = role
+		this.isLeader = isLeader
 		this.team = team
-		this.actionIdx = 0
+		this.role = role
+		this.indexOfAct = 0
 
 		this.rl.on('line', input => {
 			// Обработка строки из кон—
 			if (this.run) {
 				// Если игра начата
 				// Движения вперед, вправо, влево, удар по мячу
-
 				if ('w' == input) this.act = { n: 'dash', v: 100 }
 				if ('d' == input) this.act = { n: 'turn', v: 20 }
 				if ('a' == input) this.act = { n: 'turn', v: -20 }
@@ -36,7 +34,7 @@ class Agent {
 	}
 	msgGot(msg) {
 		// Получение сообщения
-		let data = msg.toString('utf8') // ПРиведение
+		let data = msg.toString('utf8') // Приведение
 		this.processMsg(data) // Разбор сообщения
 		this.sendCmd() // Отправка команды
 	}
@@ -53,8 +51,8 @@ class Agent {
 		let data = Msg.parseMsg(msg) // Разбор сообщения
 		if (!data) throw new Error('Parse error\n' + msg)
 		// Первое (hear) — начало игры
-		if (data.cmd == 'hear' && data.p[2] === 'play_on') this.run = true
-		if (data.cmd == 'init') this.initAgent(data.p) //MHMnmaflM3auMH
+		if (data.cmd == 'hear' && data.p[2] == 'play_on') this.run = true
+		if (data.cmd == 'init') this.initAgent(data.p) // Инициализация
 		this.analyzeEnv(data.msg, data.cmd, data.p) // Обработка
 	}
 	initAgent(p) {
@@ -63,23 +61,27 @@ class Agent {
 		this.dt = Object.create(DT[this.role]).init()
 	}
 	analyzeEnv(msg, cmd, p) {
-		if (this.team === 'Losers') return
+		// if (this.team === 'teamB') return
 		const mgr = Object.create(Manager).init(cmd, p, this.team, this.x, this.y)
-		
-		mgr.init(cmd, p, this.team)
+		mgr.isLeader = this.isLeader
 
 		if (mgr.stopRunning()) {
 			this.run = false
 			this.dt.state.next = 0
 		}
-		// Анализ сообщения
-		if (cmd === 'see') {
+
+		if (cmd == 'see') {
 			const pos = mgr.getLocation()
-			[this.x, this.y] = [pos.x, pos.y]
+			;[this.x, this.y] = [pos.x, pos.y]
+			const teammate = mgr.getTeamLocationFirstPlayer()
+			const opponent = mgr.getTeamLocationFirstPlayer(false)
+			console.log('this.isLeader', this.isLeader)
+			console.log('this.pos', pos)
 
 			if (this.run) this.act = mgr.getAction(this.dt)
 		}
 	}
+
 	sendCmd() {
 		if (this.run) {
 			// Игра начата

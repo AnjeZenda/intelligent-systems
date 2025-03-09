@@ -1,5 +1,5 @@
 const dgram = require('dgram') // Модуль для аботы с UDP
-module.exports = async (agent, teamName, version, isGoalie = flase) => {
+module.exports = async (agent, teamName, version, isGoalie = false) => {
     // Создание сокета
     const socket = dgram.createSocket({type: 'udp4', reuseAddr: true})
     agent.setSocket(socket) // Задание сокета для агента
