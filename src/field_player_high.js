@@ -1,6 +1,7 @@
 const utils = require("./utils");
 
 const CTRL_HIGH = {
+	name: "player_high",
 	execute(taken, controllers, bottom, top, direction, center){
 		let act;
 		if (taken.state.ball.dist <= 0.5){

@@ -21,15 +21,15 @@ module.exports = {
         let random_flag = taken.state.all_flags[Object.keys(taken.state.all_flags)[0]];
         if (side == "l"){
             if (random_flag.y > 0){
-                return {n: "kick", v: "10 -45"};
+                return {n: "kick", v: "5 -60"};
             } else {
-                return {n: "kick", v: "10 45"};
+                return {n: "kick", v: "5 60"};
             }
         } else {
             if (random_flag.y < 0){
-                return {n: "kick", v: "10 -45"};
+                return {n: "kick", v: "5 -60"};
             } else {
-                return {n: "kick", v: "10 45"};
+                return {n: "kick", v: "5 60"};
             }            
         }
 

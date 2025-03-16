@@ -298,12 +298,6 @@ class Agent {
     }
 
     analyzeEnv(msg, cmd, p) {
-        //this.act = {n: "dash", v: -30};
-        //return;
-
-
-
-
         if (cmd == "hear"){
             console.log(p);
             if (p[2].includes("kick") && p[2] != "before_kick_off"){
@@ -316,7 +310,6 @@ class Agent {
                 }
             }
             if (p[2].includes("goal") || p[2] === "before_kick_off"){
-                console.log("kjdslfkjlskdjf");
                 this.act = {n: "move", v: this.start_x + " " + this.start_y}
                 this.taken.action = "return";
                 this.taken.turnData = "ft0";
