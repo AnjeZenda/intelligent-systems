@@ -1,8 +1,9 @@
 const CTRL_MIDDLE = {
 	action: "return",
 	turnData: "ft0",
+	name: "goalie_middle",
 	execute(input, controllers){
-		const next = controllers[0];
+		const next = controllers.slice(1)[0];
 		switch (input.action){ 
 			case "return":
 				input.cmd = this.actionReturn(input);

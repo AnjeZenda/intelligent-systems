@@ -1,5 +1,6 @@
 const CTRL_HIGH = {
 	wait: 0,
+	name: "goalie_high",
 	execute(input){
 		input.wait--;
 		const immediate = this.immidiateReaction(input);
