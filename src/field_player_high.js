@@ -23,17 +23,17 @@ const CTRL_HIGH = {
 			if (side == "l"){
 				if (taken.state.ball){
 					if (taken.state.ball.y >= 27){
-						return {n: "kick", v: "10 -45"}
+						return {n: "kick", v: "5 -60"}
 					} else if (taken.state.ball.y <= -27){
-						return {n: "kick", v: "10 45"}
+						return {n: "kick", v: "5 60"}
 					}
 				}
 			} else {
 				if (taken.state.ball){
 					if (taken.state.ball.y >= 29){
-						return {n: "kick", v: "10 45"}
+						return {n: "kick", v: "5 60"}
 					} else if (taken.state.ball.y <= -29){
-						return {n: "kick", v: "10 -45"}
+						return {n: "kick", v: "5 -60"}
 					}
 				}
 			}
